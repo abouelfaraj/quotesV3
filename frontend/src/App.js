@@ -1,25 +1,23 @@
-import logo from './logo.svg';
-import './App.css';
+import React from 'react';
+import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom';
+import ProtectedRoute from './context/ProtectedRoute';
+import { AuthProvider } from './context/authContext';
+import './assets/sass/style.scss';
+import Feed from './pages/feeds';
+import LoginOrRegister from './pages/auth';
 
-function App() {
+const App = () => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <AuthProvider>
+      <Router>
+        <Switch>
+          <ProtectedRoute path="/feeds" component={Feed} />
+          <Route path="/auth" component={LoginOrRegister} />
+          <Redirect path="/" to="/feeds" />
+        </Switch>
+      </Router>
+    </AuthProvider>
   );
-}
+};
 
 export default App;

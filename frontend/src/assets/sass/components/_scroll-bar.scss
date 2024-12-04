@@ -1,0 +1,24 @@
+.scrollable-container {
+    /* For Webkit Browsers (Chrome, Safari) */
+    &::-webkit-scrollbar {
+        width: 0px; /* Width of the scrollbar */
+    }
+
+    &::-webkit-scrollbar-track {
+        background: #f1f1f1; /* Background of the track */
+        border-radius: 10px; /* Rounded corners for track */
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: transparent !important; /* Color of the scrollbar thumb */
+        border-radius: 10px; /* Rounded corners for thumb */
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+        background: #555; /* Darker color on hover */
+    }
+
+    /* For Firefox */
+    scrollbar-width: thin; /* Makes scrollbar thinner */
+    scrollbar-color: #888 #f1f1f1; /* Thumb color and track color */
+}
