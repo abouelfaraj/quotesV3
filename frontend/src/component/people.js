@@ -41,7 +41,7 @@ const People = () => {
 
             {Peoples.filter(person => !followedUsers.has(person.id)).length ? (
                 Peoples.filter(person => !followedUsers.has(person.id)).map(person => (
-                    <div className="d-flex align-items-center mb-5" style={{ height: "300px"}}>
+                    <div className="d-flex align-items-center mb-5">
                         <div className="symbol symbol-40 symbol-light-white mr-5">
                             <div className="symbol-label">
                                 <img src="/metronic/theme/html/demo5/dist/assets/media/svg/avatars/002-girl.svg" className="h-75 align-self-end" alt="" />
