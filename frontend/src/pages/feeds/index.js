@@ -125,7 +125,7 @@ function Feed() {
                       <h3 className="card-title font-weight-bolder text-success">People</h3>
                     </div>
                     <div className="card-body pt-2">
-                      <div className="scrollable-container overflow-auto" style={{ maxHeight: '100%' }}>
+                      <div className="scrollable-container overflow-auto" style={{ maxHeight: '300px' }}>
                         <People />
                       </div>
                     </div>
