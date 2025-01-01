@@ -6,7 +6,7 @@ class Following(models.Model):
     followed = models.ForeignKey(User, related_name='followers', on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ('follower', 'followed')  # Prevent duplicate follow relationships
+        unique_together = ('follower', 'followed')
 
     def __str__(self):
         return f"{self.follower.username} follows {self.followed.username}"
