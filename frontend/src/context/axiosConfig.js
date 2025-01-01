@@ -1,6 +1,6 @@
 import axios from 'axios';
-import config from '../config';
 import Cookies from 'js-cookie';
+import config from '../config';
 
 const client = axios.create({
     baseURL: config.baseURL,

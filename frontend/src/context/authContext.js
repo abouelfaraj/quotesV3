@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-    const [currentUser, setCurrentUser] = useState(null);
+    const [currentUser, setCurrentUser] = useState(undefined);
 
     useEffect(() => {
         const user = localStorage.getItem('currentUser');
@@ -13,7 +13,10 @@ export const AuthProvider = ({ children }) => {
             } catch (error) {
                 console.error("Failed to parse user data from localStorage:", error);
                 localStorage.removeItem('currentUser');
+                setCurrentUser(null);
             }
+        } else {
+            setCurrentUser(null);
         }
     }, []);
 
@@ -29,4 +32,6 @@ export const AuthProvider = ({ children }) => {
     );
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+    return useContext(AuthContext);
+};
