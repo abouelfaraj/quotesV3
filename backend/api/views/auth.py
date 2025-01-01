@@ -3,12 +3,22 @@ from django.contrib.auth.models import User
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from ..serializers import UserRegisterSerializer, UserLoginSerializer, UserSerializer, UserAuthInfoSerializer
 from rest_framework import permissions, status
-from ..validations import custom_validation, validate_email, validate_password
 from django.http import JsonResponse
+from ..serializers.user import (
+    UserSerializer,
+    UserAuthInfoSerializer,
+    UserLoginSerializer,
+    UserRegisterSerializer,
+    UserProfileSerializer
+)
+from ..validations import (
+    custom_validation,
+    validate_email,
+    validate_password
+)
 from ..models.Following import Following
-from ..models.UserPicture import UserPicture
+from ..models.UserProfile import UserProfile
 from django.core.files.storage import FileSystemStorage
 
 
@@ -31,10 +41,11 @@ class UserRegister(APIView):
 
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
+
 class UserAuthInfo(APIView):
     permission_classes = (permissions.IsAuthenticated,)
     authentication_classes = (SessionAuthentication,)
- 
+
     def post(self, request):
         user = request.user
         data = request.data
@@ -46,77 +57,95 @@ class UserAuthInfo(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
- 
-def upload_file(request):
-    return JsonResponse({'message': 'File uploaded successfully'})
-    
+
 class AddUserPicture(APIView):
     permission_classes = (permissions.IsAuthenticated,)
     authentication_classes = (SessionAuthentication,)
-    
+
     def post(self, request):
         user = request.user
         user_picture = request.FILES.get('picture')
 
         if user_picture:
             picture_content = user_picture.read()
-            
-        if user_picture:
-            user_picture_instance, created = UserPicture.objects.update_or_create(
-                user=user,
+            user_picture_instance, created = UserProfile.objects.update_or_create(
+                userProfile=user,
                 defaults={'picture': picture_content},
             )
+            
+            serializer = UserProfileSerializer(user_picture_instance)
+            base64_picture = serializer.get_picture(user_picture_instance)
 
             if created:
-                return JsonResponse({"message": "Picture added successfully.","file_url":user_picture.name}, status=status.HTTP_201_CREATED)
+                return JsonResponse({"message": "Picture added successfully.", "file_content": base64_picture}, status=status.HTTP_201_CREATED)
             else:
-                return JsonResponse({"message": "Picture updated successfully."}, status=status.HTTP_200_OK)
-        
+                return JsonResponse({"message": "Picture updated successfully.", "file_content": base64_picture}, status=status.HTTP_200_OK)
+
         return JsonResponse({"error": "No picture provided."}, status=status.HTTP_400_BAD_REQUEST)
 
-    
+
 class UserLogin(APIView):
-	permission_classes = (permissions.AllowAny,)
-	authentication_classes = (SessionAuthentication,)
-	def post(self, request):
-		data = request.data
-		assert validate_email(data)
-		assert validate_password(data)
-		serializer = UserLoginSerializer(data=data)
-		if serializer.is_valid(raise_exception=True):
-			user = serializer.check_user(data)
-			login(request, user)
-			serializer = UserSerializer(user)
-			return Response({'user': serializer.data}, status=status.HTTP_200_OK)
+    permission_classes = (permissions.AllowAny,)
+    authentication_classes = (SessionAuthentication,)
+
+    def post(self, request):
+        data = request.data
+        assert validate_email(data)
+        assert validate_password(data)
+        serializer = UserLoginSerializer(data=data)
+        if serializer.is_valid(raise_exception=True):
+            user = serializer.check_user(data)
+            login(request, user)
+            user = User.objects.select_related('userProfile').get(id=user.id)
+            user_serializer = UserSerializer(user)
+            return Response({'user': user_serializer.data}, status=status.HTTP_200_OK)
 
 
 class UserLogout(APIView):
-	permission_classes = (permissions.AllowAny,)
-	authentication_classes = ()
-	def post(self, request):
-		logout(request)
-		return Response(status=status.HTTP_200_OK)
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request):
+        logout(request)
+        return Response(status=status.HTTP_200_OK)
 
 
 class UserView(APIView):
-	permission_classes = (permissions.IsAuthenticated,)
-	authentication_classes = (SessionAuthentication,)
-	
-	def get(self, request):
-		serializer = UserSerializer(request.user)
-		return Response({'user': serializer.data}, status=status.HTTP_200_OK)
+    permission_classes = (permissions.IsAuthenticated,)
+    authentication_classes = (SessionAuthentication,)
 
-    
+    def get(self, request):
+        user = request.user
+        serializer = UserSerializer(user)
+        return Response({'user': serializer.data}, status=status.HTTP_200_OK)
+
+
 class UserList(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def get(self, request):
         user = request.user
         following_ids = Following.objects.filter(follower=user).values_list('followed_id', flat=True)
-        users = User.objects.exclude(id__in=following_ids)[:10].values('id', 'first_name', 'last_name', 'email')
-        
+        users = User.objects.exclude(id__in=following_ids).values('id', 'first_name', 'last_name', 'email')[:10]
+
         return JsonResponse(list(users), safe=False)
-		
+
+
+class FollowUser(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        followed_id = request.data.get('followed_id')
+        follower = request.user
+
+        try:
+            followed_user = User.objects.get(id=followed_id)
+            Following.objects.create(follower=follower, followed=followed_user)
+            return JsonResponse({'message': 'Followed successfully'}, status=201)
+        except User.DoesNotExist:
+            return JsonResponse({'error': 'User does not exist.'}, status=404)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+
 class follow_user(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
@@ -129,3 +158,6 @@ class follow_user(APIView):
             return JsonResponse({'message': 'Followed successfully'}, status=201)
         
         return JsonResponse({'error': 'Invalid request'}, status=400)
+            
+def upload_file(request):
+    return JsonResponse({'message': 'File uploaded successfully'})

@@ -2,9 +2,20 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework import permissions
 from rest_framework.views import APIView
 from django.http import JsonResponse
+from ..serializers.feed import feedSerializer
 from ..forms.feeds import FeedForm
 from ..models.Feed import Feed, TypeFeed
 from ..models.Following import Following
+from django.utils import timezone
+
+def apiInfos(request):
+    return JsonResponse({
+        "name":"quotes API",
+        "description":"API's for quotes socail media application", 
+        "permissions":"Allowd by user authentication",
+        "version": "0.3.0", 
+        "date": str(timezone.now())
+        })
 
 class addNewFeed(APIView):
     permission_classes = (permissions.IsAuthenticated,)
@@ -24,6 +35,16 @@ class addNewFeed(APIView):
             return JsonResponse(safe=False, status=201)
         
         return JsonResponse({'error': 'Invalid data'}, status=400)
+    
+class getFeedsAll(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    authentication_classes = (SessionAuthentication,)
+    
+    def get(self, request):
+        user = request.user
+        feeds = Feed.objects.filter(user=user).order_by('created_at').all()
+        allFeeds = feedSerializer(feeds, many=True)
+        return JsonResponse({"Response": "True", "Search": allFeeds.data})
     
 class getFeedsWhereIamfollow(APIView):
     permission_classes = (permissions.IsAuthenticated,)
