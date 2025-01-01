@@ -15,7 +15,15 @@
 /frontend/yarn-debug.log*
 /frontend/yarn-error.log*
 
+/frontend/package.json*
+/frontend/package-lock.json*
+
 # backend
 /backend/api/__pycache__
 /backend/api/migrations
+/backend/api/models/__pycache__
+/backend/api/views/__pycache__
+/backend/api/urls/__pycache__
+/backend/api/forms/__pycache__
+/backend/api/serializers/__pycache__
 /backend/quotesV3/__pycache__
