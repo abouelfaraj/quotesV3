@@ -34,16 +34,7 @@ SECRET_KEY = os.environ.get(
     default=secrets.token_urlsafe(nbytes=64),
 )
 
-# SECURITY WARNING: don't run with debug turned on in production!
-IS_HEROKU_APP = "DYNO" in os.environ and not "CI" in os.environ
-
-if not IS_HEROKU_APP:
-    DEBUG = True
-
-if IS_HEROKU_APP:
-    ALLOWED_HOSTS = ["*"]
-else:
-    ALLOWED_HOSTS = [".localhost","127.0.0.1", "[::1]", "0.0.0.0"]
+ALLOWED_HOSTS = [".localhost","127.0.0.1", "[::1]", "0.0.0.0"]
 
 
 # Application definition
@@ -82,6 +73,8 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.AllowAny',
     ),
 }
+
+DEBUG = True
 
 ROOT_URLCONF = 'quotesV3.urls'
 
@@ -149,11 +142,6 @@ LOCALE_PATHS = [
 
 STATIC_URL = 'static/'
 
-import os
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'frontend/build'),
-]
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_URL = '/login'
@@ -164,9 +152,11 @@ CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
+    'http://127.0.0.1:3000',
 ]
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:3000',
+    'http://127.0.0.1:3000',
 ]
 
 from corsheaders.defaults import default_headers
